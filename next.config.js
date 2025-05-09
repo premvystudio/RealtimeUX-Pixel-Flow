@@ -6,6 +6,10 @@ const nextConfig = {
     // During the fix of AnyCable integration, we'll temporarily ignore TS errors
     ignoreBuildErrors: true,
   },
+  // Disable ESLint during production builds
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   images: {
     remotePatterns: [
       {

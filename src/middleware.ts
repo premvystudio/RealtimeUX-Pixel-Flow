@@ -1,38 +1,57 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
 // Define public routes that don't require authentication
-const publicRoutes = [
-  '/',
-  '/sign-in',
-  '/sign-up',
-  '/api/webhooks(.*)',
-  '/api/public(.*)',
-];
+const publicRoutes = createRouteMatcher([
+  "/",
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/api/test-blob-upload",
+  "/api/design"
+]);
 
-// Define static assets that should be ignored
-const ignoredRoutes = [
-  '/((?!api|trpc))(_next|.+\\.[\\w]+$)',
-  '/favicon.ico',
-  '/assets/(.*)',
-  '/illustrations/(.*)',
-];
-
-export default function middleware(req: NextRequest) {
-  // Check if the route is a static asset that should be ignored
-  if (ignoredRoutes.some(route => new RegExp(route).test(req.nextUrl.pathname))) {
+export default clerkMiddleware(async (auth, req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    const response = new NextResponse(null, { status: 204 });
+    response.headers.set('Access-Control-Allow-Credentials', 'true');
+    response.headers.set('Access-Control-Allow-Origin', req.headers.get('origin') || '*');
+    response.headers.set('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    response.headers.set('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+    return response;
+  }
+  
+  // Allow public routes to proceed without authentication
+  if (publicRoutes(req)) {
     return NextResponse.next();
   }
-
-  // Check if the route is public
-  if (publicRoutes.some(route => new RegExp(route).test(req.nextUrl.pathname))) {
-    return NextResponse.next();
+  
+  // For protected routes, check authentication status
+  const authObject = await auth();
+  if (!authObject.userId) {
+    return authObject.redirectToSignIn({ returnBackUrl: req.url });
   }
-
-  // For now, allow all routes since we can't check auth without Clerk
+  
+  // User is authenticated, allow request to proceed
   return NextResponse.next();
-}
+}, {
+  // Enable debugging in development for better troubleshooting
+  debug: process.env.NODE_ENV === 'development',
+  
+  // Include both localhost:3000 and localhost:3002 for local development
+  authorizedParties: [
+    process.env.NEXT_PUBLIC_CLERK_FRONTEND_API,
+    'http://localhost:3000',
+    'http://localhost:3002'
+  ]
+});
 
+// Use the recommended matcher configuration from both Clerk and Next.js docs
 export const config = {
-  matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
+  matcher: [
+    // Skip Next.js internals and static files
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Always run for API routes
+    '/(api|trpc)(.*)',
+  ],
 };

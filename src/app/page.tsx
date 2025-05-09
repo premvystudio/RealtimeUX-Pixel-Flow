@@ -1,5 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
+import BlobStorageTest from '../components/BlobStorageTest';
+import AuthTest from '../components/AuthTest';
 
 export default function Home() {
   return (
@@ -9,7 +11,7 @@ export default function Home() {
         <p className="text-xl mb-8">
           A modern SaaS application for design and image generation
         </p>
-        <div className="flex gap-4">
+        <div className="flex gap-4 mb-10">
           <Link
             href="/sign-in"
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -22,6 +24,16 @@ export default function Home() {
           >
             Sign Up
           </Link>
+        </div>
+        
+        {/* Test component for auth */}
+        <div className="w-full">
+          <AuthTest />
+        </div>
+        
+        {/* Test component for Vercel Blob Storage */}
+        <div className="mt-10 w-full">
+          <BlobStorageTest />
         </div>
       </div>
     </main>

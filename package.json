@@ -4,11 +4,11 @@
   "private": true,
   "engines": {
     "node": ">=18.0.0",
-    "pnpm": ">=7.0.0"
+    "pnpm": ">=10.0.0"
   },
   "volta": {
     "node": "20.11.1",
-    "pnpm": "8.6.12"
+    "pnpm": "10.10.0"
   },
   "scripts": {
     "dev": "next dev --turbopack",

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "dev:default": "next dev",
-    "prebuild": "pnpm dlx pnpm-exec-bins approve-builds @clerk/shared sharp unrs-resolver",
+    "prebuild": "pnpm approve-builds @clerk/shared sharp unrs-resolver",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

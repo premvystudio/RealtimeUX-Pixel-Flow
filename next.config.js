@@ -3,10 +3,10 @@ const nextConfig = {
   reactStrictMode: true,
   compress: true,
   typescript: {
-    // During the fix of AnyCable integration, we'll temporarily ignore TS errors
+    // ⚠️ This should be removed once the AnyCable integration issues are fixed
     ignoreBuildErrors: true,
   },
-  // Disable ESLint during production builds
+  // ⚠️ This should be enabled for production builds once issues are fixed
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -30,7 +30,7 @@ const nextConfig = {
       },
     ],
   },
-  // Server Actions are stable in Next.js 15, so we don't need the experimental flag
+  // Server Actions are enabled in Next.js 14
 };
 
 module.exports = nextConfig;

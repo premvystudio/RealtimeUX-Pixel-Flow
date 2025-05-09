@@ -10,9 +10,9 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Disable static generation of the not-found page to fix Clerk initialization
   experimental: {
-    disableStaticNotFound: true,
+    // Optimize package imports for authentication libraries
+    optimizePackageImports: ['@clerk/nextjs'],
   },
   images: {
     remotePatterns: [

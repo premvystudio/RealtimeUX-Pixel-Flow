@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server'
 import { Ratelimit } from '@upstash/ratelimit'
 import { redis } from '../../../lib/redis'
-import { createJob } from '../../(dashboard)/design/actions'
+import { DesignRepository } from '../../../lib/design-repository'
 import { getAuth } from '@clerk/nextjs/server'
 
 export const runtime = 'edge'
@@ -17,8 +17,8 @@ export async function POST(req: Request) {
   const { success } = await limiter.limit(ip)
   if (!success) return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
 
-  // @ts-nocheck
-  const { userId } = getAuth(req as any)
+  // @ts-ignore - Clerk types have issues with Next.js 14+
+  const { userId } = getAuth(req)
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { prompt } = await req.json()
@@ -26,6 +26,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid prompt' }, { status: 400 })
   }
 
-  const id = await createJob(prompt)
-  return NextResponse.json({ id })
+  try {
+    const id = await DesignRepository.createJob(userId, prompt)
+    return NextResponse.json({ id })
+  } catch (error) {
+    console.error('Design creation error:', error)
+    return NextResponse.json({ error: 'Failed to create design' }, { status: 500 })
+  }
 } 

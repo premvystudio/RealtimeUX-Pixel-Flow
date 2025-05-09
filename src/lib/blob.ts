@@ -1,8 +1,9 @@
-import { put } from '@vercel/blob'
-import { broadcaster } from './broadcaster'
+/**
+ * @deprecated Use design-service.ts instead
+ */
+
+import { uploadPreview as uploadPreviewImpl } from './design-service';
 
 export async function uploadPreview(id: string, file: Blob) {
-  const { url } = await put(`previews/${id}.jpg`, file, { access: 'public' })
-  await broadcaster.broadcast('JobChannel', { id }, { lowres: url, progress: 50 })
-  return url
+  return uploadPreviewImpl(id, file);
 } 

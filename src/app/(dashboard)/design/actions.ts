@@ -1,27 +1,24 @@
 // @ts-nocheck
 'use server'
 
-import { broadcast } from '../../../lib/broadcaster'
-import { redis } from '../../../lib/redis'
-import { currentUser } from '@clerk/nextjs/server'
-import { nanoid } from 'nanoid'
+import { EventService, EventType } from '../../../lib/event-service';
+import { DesignRepository } from '../../../lib/design-repository';
+import { currentUser } from '@clerk/nextjs/server';
 
 export async function createJob(prompt: string) {
-  const user = await currentUser()
-  if (!user) throw new Error('unauthenticated')
+  const user = await currentUser();
+  if (!user) throw new Error('unauthenticated');
 
-  const id = nanoid()
-
-  // Persist minimal job state for workers
-  await redis.xadd('design:jobs', '*', {
-    id,
-    prompt,
-    status: 'pending',
-    created_at: Date.now(),
-  })
+  // Create design job in repository
+  const id = await DesignRepository.createJob(user.id, prompt);
 
   // Optimistic UI broadcast
-  await broadcast('JobChannel', { id }, { status: 'pending', progress: 0 })
+  await EventService.notify(
+    'JobChannel', 
+    EventType.UPLOAD_STARTED, 
+    { id }, 
+    { status: 'pending', progress: 0 }
+  );
 
-  return id
+  return id;
 } 
